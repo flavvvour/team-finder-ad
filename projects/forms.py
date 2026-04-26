@@ -22,4 +22,3 @@ class ProjectForm(GithubUrlMixin, forms.ModelForm):
                 choices=[(PROJECT_STATUS_OPEN, "Открыт"), (PROJECT_STATUS_CLOSED, "Закрыт")]
             ),
         }
-

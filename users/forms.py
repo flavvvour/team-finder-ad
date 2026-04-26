@@ -88,7 +88,6 @@ class EditProfileForm(GithubUrlMixin, forms.ModelForm):
         return phone
 
 
-
 class ChangePasswordForm(forms.Form):
     old_password = forms.CharField(widget=forms.PasswordInput, label="Текущий пароль")
     new_password1 = forms.CharField(widget=forms.PasswordInput, label="Новый пароль")
