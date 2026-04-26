@@ -1,12 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.utils.html import format_html
 
 from .models import User
 
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    list_display = ("email", "name", "surname", "is_staff", "is_active")
+    list_display = ("avatar_thumbnail", "email", "name", "surname", "is_staff", "is_active")
     list_filter = ("is_staff", "is_active")
     search_fields = ("email", "name", "surname")
     ordering = ("id",)
@@ -30,3 +31,9 @@ class UserAdmin(BaseUserAdmin):
         }),
     )
     filter_horizontal = ("favorites", "groups", "user_permissions")
+
+    @admin.display(description="Аватар")
+    def avatar_thumbnail(self, obj):
+        if obj.avatar:
+            return format_html('<img src="{}" width="40" height="40" style="border-radius:50%">', obj.avatar.url)
+        return "-"

@@ -3,6 +3,8 @@ import re
 from django import forms
 from django.contrib.auth import authenticate
 
+from mixins import GithubUrlMixin
+
 from .models import User
 
 
@@ -51,7 +53,7 @@ class LoginForm(forms.Form):
         return self._user
 
 
-class EditProfileForm(forms.ModelForm):
+class EditProfileForm(GithubUrlMixin, forms.ModelForm):
     class Meta:
         model = User
         fields = ["name", "surname", "avatar", "about", "phone", "github_url"]
@@ -85,11 +87,6 @@ class EditProfileForm(forms.ModelForm):
             raise forms.ValidationError("Этот номер телефона уже используется.")
         return phone
 
-    def clean_github_url(self):
-        url = (self.cleaned_data.get("github_url") or "").strip()
-        if url and "github.com" not in url:
-            raise forms.ValidationError("Ссылка должна вести на github.com.")
-        return url or ""
 
 
 class ChangePasswordForm(forms.Form):
@@ -104,16 +101,16 @@ class ChangePasswordForm(forms.Form):
         super().__init__(*args, **kwargs)
 
     def clean_old_password(self):
-        old = self.cleaned_data["old_password"]
-        if not self.user.check_password(old):
+        old_password = self.cleaned_data["old_password"]
+        if not self.user.check_password(old_password):
             raise forms.ValidationError("Неверный текущий пароль.")
-        return old
+        return old_password
 
     def clean(self):
         cleaned = super().clean()
-        p1 = cleaned.get("new_password1")
-        p2 = cleaned.get("new_password2")
-        if p1 and p2 and p1 != p2:
+        new_password = cleaned.get("new_password1")
+        confirm_password = cleaned.get("new_password2")
+        if new_password and confirm_password and new_password != confirm_password:
             raise forms.ValidationError("Новые пароли не совпадают.")
         return cleaned
 

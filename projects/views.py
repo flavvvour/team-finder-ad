@@ -1,19 +1,22 @@
+from http import HTTPStatus
+
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
+from service import paginate
+
+from constants import PROJECT_STATUS_CLOSED, PROJECT_STATUS_OPEN
+
+from .constants import PROJECTS_PER_PAGE
 from .forms import ProjectForm
 from .models import Project
 
-PROJECTS_PER_PAGE = 12
-
 
 def project_list(request):
-    projects_qs = Project.objects.select_related("owner").all()
-    paginator = Paginator(projects_qs, PROJECTS_PER_PAGE)
-    page = paginator.get_page(request.GET.get("page"))
+    projects_qs = Project.objects.with_relations()
+    page = paginate(projects_qs, request.GET.get("page"), PROJECTS_PER_PAGE)
     return render(request, "projects/project_list.html", {
         "projects": page,
         "page_obj": page,
@@ -22,7 +25,7 @@ def project_list(request):
 
 def project_detail(request, project_id):
     project = get_object_or_404(
-        Project.objects.select_related("owner").prefetch_related("participants"),
+        Project.objects.with_relations(),
         pk=project_id,
     )
     return render(request, "projects/project-details.html", {"project": project})
@@ -31,7 +34,7 @@ def project_detail(request, project_id):
 @login_required
 def create_project(request):
     form = ProjectForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
+    if form.is_valid():
         project = form.save(commit=False)
         project.owner = request.user
         project.save()
@@ -44,7 +47,7 @@ def create_project(request):
 def edit_project(request, project_id):
     project = get_object_or_404(Project, pk=project_id, owner=request.user)
     form = ProjectForm(request.POST or None, instance=project)
-    if request.method == "POST" and form.is_valid():
+    if form.is_valid():
         form.save()
         return redirect("projects:detail", project_id=project.pk)
     return render(request, "projects/create-project.html", {"form": form, "is_edit": True})
@@ -55,13 +58,11 @@ def edit_project(request, project_id):
 def toggle_favorite(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
     user = request.user
-    if project in user.favorites.all():
+    if favorited := user.favorites.filter(pk=project.pk).exists():
         user.favorites.remove(project)
-        favorited = False
     else:
         user.favorites.add(project)
-        favorited = True
-    return JsonResponse({"status": "ok", "favorited": favorited})
+    return JsonResponse({"status": "ok", "favorited": not favorited})
 
 
 @login_required
@@ -71,31 +72,29 @@ def toggle_participate(request, project_id):
     user = request.user
     if user == project.owner:
         return JsonResponse(
-            {"status": "error", "message": "Owner cannot leave own project."}, status=400
+            {"status": "error", "message": "Owner cannot leave own project."}, status=HTTPStatus.BAD_REQUEST
         )
-    if user in project.participants.all():
+    if participating := project.participants.filter(pk=user.pk).exists():
         project.participants.remove(user)
-        participating = False
     else:
         project.participants.add(user)
-        participating = True
-    return JsonResponse({"status": "ok", "participant": participating})
+    return JsonResponse({"status": "ok", "participant": not participating})
 
 
 @login_required
 @require_POST
 def complete_project(request, project_id):
     project = get_object_or_404(Project, pk=project_id, owner=request.user)
-    if project.status != "open":
+    if project.status != PROJECT_STATUS_OPEN:
         return JsonResponse(
-            {"status": "error", "message": "Project is already closed."}, status=400
+            {"status": "error", "message": "Project is already closed."}, status=HTTPStatus.BAD_REQUEST
         )
-    project.status = "closed"
+    project.status = PROJECT_STATUS_CLOSED
     project.save()
-    return JsonResponse({"status": "ok", "project_status": "closed"})
+    return JsonResponse({"status": "ok", "project_status": PROJECT_STATUS_CLOSED})
 
 
 @login_required
 def favorites(request):
-    projects = request.user.favorites.select_related("owner").all()
+    projects = request.user.favorites.with_relations()
     return render(request, "projects/favorite_projects.html", {"projects": projects})

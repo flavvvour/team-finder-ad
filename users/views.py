@@ -1,19 +1,19 @@
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
+from service import paginate
+
+from .constants import USERS_PER_PAGE
 from .forms import ChangePasswordForm, EditProfileForm, LoginForm, RegisterForm
 from .models import User
-
-USERS_PER_PAGE = 12
 
 
 def register(request):
     if request.user.is_authenticated:
         return redirect("projects:list")
     form = RegisterForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
+    if form.is_valid():
         form.save()
         return redirect("users:login")
     return render(request, "users/register.html", {"form": form})
@@ -23,7 +23,7 @@ def user_login(request):
     if request.user.is_authenticated:
         return redirect("projects:list")
     form = LoginForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
+    if form.is_valid():
         login(request, form.get_user())
         return redirect("projects:list")
     return render(request, "users/login.html", {"form": form})
@@ -51,8 +51,7 @@ def user_list(request):
         else:
             active_filter = ""
 
-    paginator = Paginator(qs, USERS_PER_PAGE)
-    page = paginator.get_page(request.GET.get("page"))
+    page = paginate(qs, request.GET.get("page"), USERS_PER_PAGE)
     return render(request, "users/participants.html", {
         "participants": page,
         "page_obj": page,
@@ -76,7 +75,7 @@ def edit_profile(request):
         request.FILES or None,
         instance=request.user,
     )
-    if request.method == "POST" and form.is_valid():
+    if form.is_valid():
         form.save()
         return redirect("users:detail", user_id=request.user.pk)
     return render(request, "users/edit_profile.html", {"form": form})
@@ -85,7 +84,7 @@ def edit_profile(request):
 @login_required
 def change_password(request):
     form = ChangePasswordForm(request.user, request.POST or None)
-    if request.method == "POST" and form.is_valid():
+    if form.is_valid():
         form.save()
         update_session_auth_hash(request, request.user)
         return redirect("users:detail", user_id=request.user.pk)
