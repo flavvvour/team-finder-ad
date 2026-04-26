@@ -1,9 +1,8 @@
 from django import forms
 
-from constants import PROJECT_STATUS_CLOSED, PROJECT_STATUS_OPEN
 from mixins import GithubUrlMixin
 
-from .models import Project
+from projects.models import Project
 
 
 class ProjectForm(GithubUrlMixin, forms.ModelForm):
@@ -18,7 +17,5 @@ class ProjectForm(GithubUrlMixin, forms.ModelForm):
         }
         widgets = {
             "description": forms.Textarea(attrs={"rows": 5}),
-            "status": forms.Select(
-                choices=[(PROJECT_STATUS_OPEN, "Открыт"), (PROJECT_STATUS_CLOSED, "Закрыт")]
-            ),
+            "status": forms.Select(choices=Project.STATUS_CHOICES),
         }

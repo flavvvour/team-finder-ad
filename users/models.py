@@ -3,8 +3,8 @@ from django.db import models
 
 from constants import USER_ABOUT_MAX_LENGTH, USER_NAME_MAX_LENGTH, USER_PHONE_MAX_LENGTH
 
-from .managers import UserManager
-from .service import generate_avatar_image
+from users.managers import UserManager
+from users.service import generate_avatar_image
 
 
 class User(AbstractBaseUser, PermissionsMixin):

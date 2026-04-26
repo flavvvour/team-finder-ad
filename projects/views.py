@@ -5,18 +5,15 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from service import paginate
-
 from constants import PROJECT_STATUS_CLOSED, PROJECT_STATUS_OPEN
-
-from .constants import PROJECTS_PER_PAGE
-from .forms import ProjectForm
-from .models import Project
+from projects.forms import ProjectForm
+from projects.models import Project
+from service import paginate
 
 
 def project_list(request):
     projects_qs = Project.objects.with_relations()
-    page = paginate(projects_qs, request.GET.get("page"), PROJECTS_PER_PAGE)
+    page = paginate(projects_qs, request)
     return render(request, "projects/project_list.html", {
         "projects": page,
         "page_obj": page,

@@ -1,6 +1,5 @@
 from pathlib import Path
 from decouple import config
-from django.urls import reverse_lazy
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -124,6 +123,6 @@ AUTH_USER_MODEL = "users.User"
 
 AUTHENTICATION_BACKENDS = ["users.backends.EmailBackend"]
 
-LOGIN_URL = reverse_lazy("users:login")
-LOGIN_REDIRECT_URL = reverse_lazy("projects:list")
-LOGOUT_REDIRECT_URL = reverse_lazy("projects:list")
+LOGIN_URL = "users:login"
+LOGIN_REDIRECT_URL = "projects:list"
+LOGOUT_REDIRECT_URL = "projects:list"

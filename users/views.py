@@ -3,10 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from service import paginate
-
-from .constants import USERS_PER_PAGE
-from .forms import ChangePasswordForm, EditProfileForm, LoginForm, RegisterForm
-from .models import User
+from users.forms import ChangePasswordForm, EditProfileForm, LoginForm, RegisterForm
+from users.models import User
 
 
 def register(request):
@@ -51,7 +49,7 @@ def user_list(request):
         else:
             active_filter = ""
 
-    page = paginate(qs, request.GET.get("page"), USERS_PER_PAGE)
+    page = paginate(qs, request)
     return render(request, "users/participants.html", {
         "participants": page,
         "page_obj": page,

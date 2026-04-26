@@ -3,14 +3,15 @@ import re
 from django import forms
 from django.contrib.auth import authenticate
 
+from constants import USER_NAME_MAX_LENGTH
 from mixins import GithubUrlMixin
 
-from .models import User
+from users.models import User
 
 
 class RegisterForm(forms.Form):
-    name = forms.CharField(max_length=124, label="Имя")
-    surname = forms.CharField(max_length=124, label="Фамилия")
+    name = forms.CharField(max_length=USER_NAME_MAX_LENGTH, label="Имя")
+    surname = forms.CharField(max_length=USER_NAME_MAX_LENGTH, label="Фамилия")
     email = forms.EmailField(label="Email")
     password = forms.CharField(widget=forms.PasswordInput, label="Пароль")
 

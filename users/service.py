@@ -28,11 +28,14 @@ AVATAR_FONT_SIZE = 110
 AVATAR_FALLBACK_FONT_SIZE = 80
 AVATAR_TEXT_COLOR = "white"
 AVATAR_TEXT_ANCHOR = (0, 0)
+_WINDOWS_FONTS = "C:/Windows/Fonts"
+_LINUX_FONTS = "/usr/share/fonts/truetype/dejavu"
+
 AVATAR_FONT_PATHS = (
-    "C:/Windows/Fonts/arialbd.ttf",
-    "C:/Windows/Fonts/arial.ttf",
-    "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    f"{_WINDOWS_FONTS}/arialbd.ttf",
+    f"{_WINDOWS_FONTS}/arial.ttf",
+    f"{_LINUX_FONTS}/DejaVuSans-Bold.ttf",
+    f"{_LINUX_FONTS}/DejaVuSans.ttf",
 )
 
 

@@ -1,3 +1,6 @@
+# Pagination
+DEFAULT_PAGE_SIZE = 12
+
 # Project
 PROJECT_NAME_MAX_LENGTH = 200
 PROJECT_STATUS_OPEN = "open"

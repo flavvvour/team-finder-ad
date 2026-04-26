@@ -8,14 +8,10 @@ from constants import (
     PROJECT_STATUS_OPEN,
 )
 
-
-class ProjectQuerySet(models.QuerySet):
-    def with_relations(self):
-        return self.select_related("owner").prefetch_related("participants")
+from projects.querysets import ProjectQuerySet
 
 
 class Project(models.Model):
-    objects = ProjectQuerySet.as_manager()
     STATUS_CHOICES = [(PROJECT_STATUS_OPEN, "Open"), (PROJECT_STATUS_CLOSED, "Closed")]
 
     name = models.CharField(max_length=PROJECT_NAME_MAX_LENGTH)
@@ -38,11 +34,13 @@ class Project(models.Model):
         related_name="participated_projects",
     )
 
+    objects = ProjectQuerySet.as_manager()
+
     class Meta:
         ordering = ["-created_at"]
 
-    def get_absolute_url(self):
-        return reverse("projects:detail", kwargs={"project_id": self.pk})
-
     def __str__(self):
         return self.name
+
+    def get_absolute_url(self):
+        return reverse("projects:detail", kwargs={"project_id": self.pk})
